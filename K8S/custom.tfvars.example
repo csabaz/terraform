@@ -1,0 +1,33 @@
+pm_api_url = "https://xxxxxxx:8006/api2/json"
+pm_api_token_id = "xxxxxx"
+pm_api_token_secret = "xxxxxxxxxxxxxxxxxxxxxxxxx"
+pm_tls_insecure = "true"
+proxmox_host = "xxx"
+proxmox_ip = "xxx.xxx.xxx.xxx"
+template_name = "xxxxx-ci-x64-tmpl"
+ssh_user = "xxx"
+ssh_key = "ssh-rsa xxx"
+
+#vm count
+vm_id_master_prefix = "20"
+vm_id_worker_prefix = "21"
+count_master = "2"
+count_worker = "1"
+cpu_cores = "2"
+memory_master = "4096"
+memory_worker = "8196"
+
+ci_custom = "user=local-btrfs:snippets/cloud_init_k8s.yml"
+vm_storage = "local-xxx"
+nic_name = "vmbr0"
+## ip + index ex: ipconfig0 = "ip=${var.ip}${count.index + <NUBER es: 1>}/24,gw=${var.gw}"
+ip_master = "xxx.xxx.xxx.xxx"
+ip_worker = "xxx.xxx.xxx.xxx"
+ipmask = "xx"
+gateway = "xxx.xxx.xxx.xxx"
+
+dns_home_var = "xxx.xxx.xxx.xxx"
+search_domains_home_var = "domainsxxx"
+
+dns_sst_var = "xxx.xxx.xxx.xxx"
+search_domains_sst_var = "domainsxxx"

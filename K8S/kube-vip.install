@@ -1,0 +1,55 @@
+export INTERFACE=eth0
+export VIP=10.100.100.230
+KVVERSION=$(curl -sL https://api.github.com/repos/kube-vip/kube-vip/releases | jq -r ".[0].name")
+alias kube-vip="ctr image pull ghcr.io/kube-vip/kube-vip:$KVVERSION; ctr run --rm --net-host ghcr.io/kube-vip/kube-vip:$KVVERSION vip /kube-vip"
+
+kube-vip manifest pod \
+    --interface $INTERFACE \
+    --address $VIP \
+    --controlplane \
+    --services \
+    --arp \
+    --leaderElection | tee /etc/kubernetes/manifests/kube-vip.yaml
+
+
+# doc: https://kube-vip.io/docs/usage/cloud-provider/
+
+## Install provider
+kubectl apply -f https://raw.githubusercontent.com/kube-vip/kube-vip-cloud-provider/main/manifest/kube-vip-cloud-controller.yaml
+
+## create ip range 
+kubectl create configmap -n kube-system kubevip --from-literal range-global=10.100.100.231-10.100.100.239
+
+## example deploy
+kubectl expose deployment nginx-deployment --port=80 --type=LoadBalancer --name=nginx
+
+# yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+  selector:
+    app: nginx
+  type: LoadBalancer
+
+## with specific ip
+kubectl expose deployment nginx-deployment --port=80 --type=LoadBalancer --name=nginx --load-balancer-ip=10.100.100.235
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+  selector:
+    app: nginx
+  type: LoadBalancer
+  loadBalancerIP: "10.100.100.235"
