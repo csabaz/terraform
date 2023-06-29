@@ -68,7 +68,7 @@ resource "proxmox_vm_qemu" "icinga" {
     null_resource.cloud_init_icinga
   ]
   
-  count       = var.count
+  count       = "1"
   name        = var.name
   vmid        = "${var.vm_id_prefix}${count.index + 4}"
   target_node = var.target_node
@@ -77,10 +77,10 @@ resource "proxmox_vm_qemu" "icinga" {
   clone       = var.clone
   os_type     = var.os_type
   cicustom    = var.cicustom
-  ipconfig0   = "ip=${var.ipre}${count.index + 5}/${var.mask},gw=${var.gateway}"
+  ipconfig0   = "ip=${var.ipre}${count.index + 4}/${var.mask},gw=${var.gateway}"
   
   cpu         = var.cpu
-  sockets     = var.socket
+  sockets     = var.sockets
   cores       = var.cores
   memory      = var.memory
   agent       = var.agent
