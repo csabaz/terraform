@@ -2,6 +2,19 @@
 # usage:
 # ssh root@proxmox_host < 01-ci-template.sh
 
+# vm specifications
+export storage="local-btrfs"
+export os_type="l26"
+export net_bridge="vmbr0"
+export memory="8196"
+export cpu_type="host"
+export cores="2"
+export disk_hw="virtio-scsi-pci"
+export disk_size="48G"
+
+# template to install: bookworm or jammy
+export template="bookworm"
+
 # args: "vm_id" "vm_name" "file name in the current directory"
 function create_template() {
     echo "Creating template $2 ($1)"
@@ -61,19 +74,7 @@ download_image() {
     fi
 }
 
-# vm specifications
-export storage="local-btrfs"
-export os_type="l26"
-export net_bridge="vmbr0"
-export memory="8196"
-export cpu_type="host"
-export cores="2"
-export disk_hw="virtio-scsi-pci"
-export disk_size="48G"
-
-# template to install: bookworm or jammy
-export template="bookworm"
-
+# download image
 download_image "$template"
 
 # Install on host libguesetfs-tools to modify cloud image
@@ -84,6 +85,6 @@ virt-customize --install qemu-guest-agent -a ${cloud_iso}
 virt-customize --run-command 'truncate -s 0 /etc/machine-id' -a ${cloud_iso}
 virt-customize --run-command 'truncate -s 0 /var/lib/dbus/machine-id' -a ${cloud_iso}
 
+# create proxmox template
 create_template "${vm_id}" "${vm_name}" "${cloud_iso}" 
-
 
