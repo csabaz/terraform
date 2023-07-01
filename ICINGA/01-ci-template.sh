@@ -10,7 +10,7 @@ export memory="8196"
 export cpu_type="host"
 export cores="2"
 export disk_hw="virtio-scsi-pci"
-export disk_size="48G"
+export disk_size="128G"
 
 # template to install: bookworm or jammy
 export template="bookworm"

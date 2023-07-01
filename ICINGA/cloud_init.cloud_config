@@ -70,14 +70,15 @@ write_files:
       echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
       "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
       apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-      sudo -u kadmin bash -c 'wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O /home/kadmin/install.sh'
-      sudo -u kadmin bash -c "sed 's:env zsh -l::g'"
-      sudo -u kadmin bash -c "sed 's:chsh -s .*$::g'"
-      sudo -u kadmin bash -c "/home/kadmin/install.sh"
-      sudo -u root bash -c 'wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O /root/install.sh'
-      sudo -u root bash -c "sed 's:env zsh -l::g'"
-      sudo -u root bash -c "sed 's:chsh -s .*$::g'"
-      sudo -u root bash -c "/root/install.sh"
+      wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O /tmp/install.sh
+      #sed -i.bak -e 's:env zsh -l::g' -e 's:chsh -s .*$::g' -e 's:  setup_zshrc::' /tmp/install.sh
+      sed -i.bak -e 's:env zsh -l::g' -e 's:chsh -s .*$::g' /tmp/install.sh
+      chmod 755 /tmp/install.sh
+      cp -a /tmp/install.sh /home/kadmin/install.sh
+      chown kadmin:kadmin /home/kadmin/install.sh
+      #sudo -u kadmin /home/kadmin/install.sh
+      cp -a /tmp/install.sh /root/install.sh
+      #bash -c "/root/install.sh"
     owner: 'root:root'
     permissions: '0755'
 users:
