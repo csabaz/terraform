@@ -1,0 +1,49 @@
+pm_api_url = "https://xxx.xxx.xxx.xxx:8006/api2/json"
+pm_api_token_id = "user@pve!token"
+pm_api_token_secret = "xxxxxxxxxx-xxxxxx-xxxxxxx-xxxxx"
+pm_tls_insecure = "true"
+
+proxmox_ip = "xxx.xxx.xxx.xxx"
+ssh_user = ""
+ssh_key = "ssh-rsa xxx"
+
+
+#count = "1"
+name = "icinga"
+vm_id_prefix = "20"
+target_node = "pve"
+
+# Clone from xxx-ci-x64-icinga template
+clone = "bullseye-ci-x64-icinga"
+os_type = "cloud-init"
+cicustom = "user=local-btrfs:snippets/cloud_init_icinga.yml"
+##ipconfig0 = "ip=${var.ipre}${count.index + <NUBER es: 1>}/24,gw=${var.gw}"
+ipre = "xxx.xxx.xxx.XX"
+mask = "24"
+gateway = "xxx.xxx.xxx.xxx"
+
+cpu = "host"
+sockets = "1"
+cores = "4"
+memory = "16384"
+agent = "1"
+
+bootdisk = "scsi0"
+scsihw = "virtio-scsi-pci"
+
+size = "128G"
+type = "scsi"
+storage = "local-btrfs"
+iothread = "0"
+
+model = "virtio"
+bridge = "vmbr0"
+
+dns_home_var = "xxx.xxx.xxx.xxx"
+search_domains_home_var = "xxxxxxx.xxx"
+
+dns_sst_var = "xxx.xxx.xxx.xxx"
+search_domains_sst_var = "xxxxx.xxx"
+
+host_home_icinga="xxx.xxx.xxx.xxx icinga.xxxx.net icinga"
+host_sst_icinga="xxx.xxx.xxx.xxx icinga.xxxx.lan icinga"
