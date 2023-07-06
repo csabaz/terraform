@@ -55,16 +55,16 @@ download_image() {
     if [ "${1}" = "bookworm" ]
     then
       export vm_id="910"
-      export vm_name="bookworm-ci-x64-icinga"
-      export cloud_iso="bookworm-ci-x64-icinga.qcow2"
+      export vm_name="${1}-ci-x64-icinga"
+      export cloud_iso="${1}-ci-x64-icinga.qcow2"
       export ci_url="https://cloud.debian.org/images/cloud/bookworm/daily/latest/debian-12-genericcloud-amd64-daily.qcow2"
       test -f "${cloud_iso}" && echo "cloud image is already downloaded, so I use it" || curl -Lo ${cloud_iso} ${ci_url}
     #Ubuntu 22.04 (Jammy Jellyfish)
     elif [ "${1}" = "jammy" ]
     then
       export vm_id="920"
-      export vm_name="jammy-ci-x64-icinga"
-      export cloud_iso="jammy-ci-x64-icinga.qcow2"
+      export vm_name="${1}-ci-x64-icinga"
+      export cloud_iso="${1}-ci-x64-icinga.qcow2"
       export ci_url="https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
       test -f "${cloud_iso}" && echo "cloud image is already downloaded, so I use it" || curl -Lo ${cloud_iso} ${ci_url}
     else
