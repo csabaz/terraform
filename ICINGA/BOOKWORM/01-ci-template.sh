@@ -13,7 +13,7 @@ export disk_hw="virtio-scsi-pci"
 export disk_size="128G"
 
 # template to install: bookworm or jammy
-export template="jammy"
+export template="bookworm"
 
 # args: "vm_id" "vm_name" "file name in the current directory"
 function create_template() {
@@ -44,7 +44,7 @@ function create_template() {
     qm disk resize $1 scsi0 ${disk_size}
     
     #Make it a template
-    #qm template $1
+    qm template $1
         
     #Remove file when done
     #rm $3
@@ -81,9 +81,9 @@ download_image "$template"
 #apt-get update && apt-get install -y --no-install-recommends libguestfs-tools
 
 # Add any additional packages you want installed in the template, truncate machine_id for correct ipconfig
-#virt-customize --install qemu-guest-agent -a ${cloud_iso}
-#virt-customize --run-command 'truncate -s 0 /etc/machine-id' -a ${cloud_iso}
-#virt-customize --run-command 'truncate -s 0 /var/lib/dbus/machine-id' -a ${cloud_iso}
+virt-customize --install qemu-guest-agent -a ${cloud_iso}
+virt-customize --run-command 'truncate -s 0 /etc/machine-id' -a ${cloud_iso}
+virt-customize --run-command 'truncate -s 0 /var/lib/dbus/machine-id' -a ${cloud_iso}
 
 # create proxmox template
 create_template "${vm_id}" "${vm_name}" "${cloud_iso}" 

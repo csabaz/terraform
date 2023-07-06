@@ -14,7 +14,7 @@ vm_id_prefix = "20"
 target_node = "pve"
 
 # Clone from xxx-ci-x64-icinga template
-clone = "bookworm-ci-x64-icinga"
+clone = "jammy-ci-x64-icinga"
 os_type = "cloud-init"
 cicustom = "user=local-btrfs:snippets/cloud_init_icinga.yml"
 ##ipconfig0 = "ip=${var.ipre}${count.index + <NUBER es: 1>}/24,gw=${var.gw}"
@@ -44,3 +44,6 @@ search_domains_home_var = "xxxxxxx.xxx"
 
 dns_sst_var = "xxx.xxx.xxx.xxx"
 search_domains_sst_var = "xxxxx.xxx"
+
+host_home_icinga="xxx.xxx.xxx.xxx icinga.xxxx.net icinga"
+host_sst_icinga="xxx.xxx.xxx.xxx icinga.xxxx.lan icinga"

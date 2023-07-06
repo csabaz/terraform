@@ -115,3 +115,10 @@ variable "dns_sst_var" {
 variable "search_domains_sst_var" {
     type = string
 }
+variable "host_home_icinga" {
+    type = string
+}
+variable "host_sst_icinga" {
+    type = string
+}
+

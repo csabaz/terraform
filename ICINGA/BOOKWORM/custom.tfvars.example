@@ -44,3 +44,6 @@ search_domains_home_var = "xxxxxxx.xxx"
 
 dns_sst_var = "xxx.xxx.xxx.xxx"
 search_domains_sst_var = "xxxxx.xxx"
+
+host_home_icinga="xxx.xxx.xxx.xxx icinga.xxxx.net icinga"
+host_sst_icinga="xxx.xxx.xxx.xxx icinga.xxxx.lan icinga"

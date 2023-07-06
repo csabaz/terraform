@@ -26,8 +26,8 @@ data "template_file" "cloud_init_icinga" {
   
   vars = {
     ssh_key = file("~/.ssh/id_rsa.pub")
-    host_home_icinga="10.100.100.204 icinga.locdev.net icinga"
-    host_sst_icinga="10.12.13.204 icinga.mk8s.lan icinga"    
+    host_home_icinga=var.host_home_icinga
+    host_sst_icinga=var.host_sst_icinga    
 
     dns_home = var.dns_home_var
     search_domains_home = var.search_domains_home_var

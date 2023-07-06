@@ -26,8 +26,8 @@ data "template_file" "cloud_init_icinga" {
   
   vars = {
     ssh_key = file("~/.ssh/id_rsa.pub")
-    host_home_icinga="10.100.100.203 icinga.locdev.net icinga"
-    host_sst_icinga="10.12.13.203 icinga.mk8s.lan icinga"    
+    host_home_icinga=var.host_home_icinga
+    host_sst_icinga=var.host_sst_icinga    
 
     dns_home = var.dns_home_var
     search_domains_home = var.search_domains_home_var
@@ -70,14 +70,14 @@ resource "proxmox_vm_qemu" "icinga" {
   
   count       = "1"
   name        = var.name
-  vmid        = "${var.vm_id_prefix}${count.index + 3}"
+  vmid        = "${var.vm_id_prefix}${count.index + 4}"
   target_node = var.target_node
 
   # Clone from xxx-ci-x64-icinga template
   clone       = var.clone
   os_type     = var.os_type
   cicustom    = var.cicustom
-  ipconfig0   = "ip=${var.ipre}${count.index + 3}/${var.mask},gw=${var.gateway}"
+  ipconfig0   = "ip=${var.ipre}${count.index + 4}/${var.mask},gw=${var.gateway}"
   
   cpu         = var.cpu
   sockets     = var.sockets
