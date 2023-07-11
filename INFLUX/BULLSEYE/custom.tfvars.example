@@ -14,7 +14,9 @@ vm_id_prefix = "20"
 target_node = "pve"
 
 # Clone from xxx-ci-x64-icinga template
-clone = "bullseye-ci-x64-icinga"
+template = "bulsseye"
+tmpl = "influx"
+clonetag = "-ci-x64-"
 os_type = "cloud-init"
 cicustom = "user=local-btrfs:snippets/cloud_init_icinga.yml"
 ##ipconfig0 = "ip=${var.ipre}${count.index + <NUBER es: 1>}/24,gw=${var.gw}"
