@@ -18,16 +18,21 @@ packages:
   - ca-certificates
   - gnupg
   - jq
+  - apache2
+  - mariadb-server
+  - mariadb-client
+  - mariadb-common
+  - php
+  - php-mysqli
+  - php-imagick
+  - expect
 write_files:
-  - path: /usr/local/bin/post_config.sh
+  - path: /root/post_config.sh
     content: |
       #!/usr/bin/env bash
-      mkdir -p /etc/systemd/resolved.conf.d
-      export host_home_icinga="10.100.100.204 icinga.locdev.net icinga"
-      export host_sst_icinga="10.12.13.204 icinga.mk8s.lan icinga"
+      export DEBIAN_FRONTEND=noninteractive
       
-      if fping -c2 -t500 10.100.100.1 &> /dev/null
-      then
+      mkdir -p /etc/systemd/resolved.conf.d
       cat <<EOF > /etc/hosts
       127.0.0.1 localhost
       ${host_home_icinga}
@@ -45,41 +50,151 @@ write_files:
       Domains=${search_domains_home}
       EOF
       echo "$(echo $host_home_icinga |awk '{print $3}')" > /etc/hostname
-      else
-      cat <<EOF > /etc/hosts
-      127.0.0.1 localhost
-      ${host_sst_icinga}
-      ::1 localhost ip6-localhost ip6-loopback
-      fe00::0 ip6-localnet
-      ff00::0 ip6-mcastprefix
-      ff02::1 ip6-allnodes
-      ff02::2 ip6-allrouters
-      ff02::3 ip6-allhosts
-      EOF
-      cat <<EOF > /etc/systemd/resolved.conf.d/dns.conf
-      [Resolve]
-      DNS=${dns_sst}
-      FallbackDNS=1.1.1.1 1.0.0.1 2606:4700:4700::1111 2606:4700:4700::1001
-      Domains=${search_domains_sst}
-      EOF
-      echo "$(echo $host_sst_icinga |awk '{print $3}')" > /etc/hostname
-      fi
+      
       install -m 0755 -d /etc/apt/keyrings
-      curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-      chmod a+r /etc/apt/keyrings/docker.gpg
-      echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-      "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-      apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-      wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O /tmp/install.sh
-      sed -i.bak -e 's:env zsh -l::g' -e 's:chsh -s .*$:echo "ok":g' -e 's:  setup_zshrc::' /tmp/install.sh
-      chmod 755 /tmp/install.sh
-      cp -a /tmp/install.sh /home/kadmin/install.sh
-      chown kadmin:kadmin /home/kadmin/install.sh
-      sudo -u kadmin /home/kadmin/install.sh
-      cp -a /tmp/install.sh /root/install.sh
-      sh -c "/root/install.sh"
+      #curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      #chmod a+r /etc/apt/keyrings/docker.gpg
+      #echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+      #"$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      #apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O /tmp/install.sh
+      sudo chmod +x /tmp/install.sh
+      sudo -u root /tmp/install.sh --unattended --keep-zshrc
+      sudo chown kadmin:kadmin /tmp/install.sh
+      sudo -u kadmin /tmp/install.sh --unattended --keep-zshrc
+      
+      sed -i.bak -E -e 's/^;?memory_limit.*$/memory_limit = 256M/' \
+              -e 's/^;?post_max_size.*$/post_max_size = 64M/' \
+              -e 's/^;?upload_max_filesize.*$/upload_max_filesize = 100M/' \
+              -e 's/^;?max_execution_time.*$/max_execution_time = 300/' \
+              -e 's/^;default_charset.*$/default_charset = "UTF-8"/' \
+              -e 's/^;?date\.timezone.*$/date.timezone = "Europe\/Rome"/' \
+              -e 's/^;?cgi.fix_pathinfo.*$/cgi.fix_pathinfo=0/' /etc/php/7.4/apache2/php.ini
+
+      systemctl enable {apache2,mariadb}
+      systemctl restart {apache2,mariadb}
     owner: 'root:root'
     permissions: '0755'
+  - path: /root/mysql_sec_ins.sh
+    content: |
+      #!/usr/bin/env bash
+      export DEBIAN_FRONTEND=noninteractive
+    
+      # Execution mysql_secure_installation
+      expect -c "
+        
+      set timeout 3
+      spawn mysql_secure_installation
+        
+      expect \"Enter current password for root (enter for none):\"
+      send \"${mysql_root_pass_current}\r\"
+             
+      expect \"Switch to unix_socket authentication:\"
+      send \"n\r\"
+              
+      expect \"root password?\"
+      send \"y\r\"
+        
+      expect \"New password:\"
+      send \"${mysql_root_pass_new}\r\"
+        
+      expect \"Re-enter new password:\"
+      send \"${mysql_root_pass_new}\r\"
+        
+      expect \"Remove anonymous users?\"
+      send \"y\r\"
+        
+      expect \"Disallow root login remotely?\"
+      send \"y\r\"
+        
+      expect \"Remove test database and access to it?\"
+      send \"y\r\"
+        
+      expect \"Reload privilege tables now?\"
+      send \"y\r\"
+        
+      expect eof
+       "
+      exit 0
+    owner: 'root:root'
+    permissions: '0755'
+  - path: /root/icinga_ins.sh
+    content: |
+      #!/usr/bin/env bash
+      export DEBIAN_FRONTEND=noninteractive
+      # icinga
+      wget https://packages.icinga.com/icinga.key -P /tmp/
+      gpg --dearmor -o /usr/share/keyrings/icinga-archive-keyring.gpg /tmp/icinga.key
+      
+      echo "deb [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] https://packages.icinga.com/debian icinga-${icinga_dist} main" > /etc/apt/sources.list.d/${icinga_dist}-icinga.list
+      echo "deb-src [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] https://packages.icinga.com/debian icinga-${icinga_dist} main" >> /etc/apt/sources.list.d/${icinga_dist}-icinga.list
+      
+      apt-get update && apt-get -y install icinga2 icingaweb2 icingacli monitoring-plugins
+      
+      icinga2 api setup
+      
+      systemctl restart icinga2
+      
+      wget https://git.icinga.com/packaging/deb-icingadb-redis/-/archive/master/deb-icingadb-redis-master.zip -P /tmp/
+      unzip /tmp/deb-icingadb-redis-master.zip -d /tmp
+      apt-get install -y --no-install-recommends libsystemd-dev libssl-dev tcl-tls tcl
+      cd /tmp/deb-icingadb-redis-master
+      make
+      make test
+      make install
+      
+      apt-get purge -y libsystemd-dev libssl-dev tcl-tls tcl
+      apt-get autoremmove -y --purge
+
+      #apt-get -y install icingadb-redis
+      #
+      #systemctl restart icinga2
+      #systemctl enable --now icingadb-redis
+      #icinga2 feature enable icingadb
+      #systemctl restart icinga2
+      
+      apt-get -y install icinga2-ido-mysql 
+      
+      mysqladmin -u root create icinga_ido
+      mysqladmin -u root create icinga_web
+      
+      mysql -u root -e "GRANT ALL on icinga_ido.* to icinga_ido@localhost identified by '${mysql_icinga_ido_pass}';"
+      mysql -u root -e "GRANT ALL on icinga_web.* to icinga_web@localhost identified by '${mysql_icinga_web_pass}';"
+      mysql -u root -e "FLUSH PRIVILEGES;"
+      
+      mysql -u root icinga_ido < /usr/share/icinga2-ido-mysql/schema/mysql.sql
+      #mysqlshow -u root -p icinga
+       
+      icinga2 feature enable ido-mysql
+      #icinga2 feature list
+      
+      systemctl restart icinga2
+      
+      icingacli setup token create > /root/tocken.web
+      
+    owner: 'root:root'
+    permissions: '0755'
+  - path: /root/.my.cnf
+    content: |
+      [client]
+      user=root
+      password=${mysql_root_pass_new}
+    owner: 'root:root'
+    permissions: '0600'
+  - path: /etc/icinga2/features-available/ido-mysql.conf
+    content: |
+      /**
+      * The IdoMysqlConnection type implements MySQL support
+      * for DB IDO.
+      */
+      object IdoMysqlConnection "ido-mysql" {
+      user = "icinga_ido"
+      password = "${mysql_icinga_ido_pass}"
+      host = "localhost"
+      database = "icinga_ido"
+      }
+    owner: 'root:root'
+    permissions: '0600'
 users:
   - name: kadmin
     passwd: '$6$BaXfUp3m963pqWqP$JOTmPzlSySMXF4qDp86UVWqiFtzKu8nYXiSbkdZVfmvZtsjpuaU0vSKGZnjYO9qNbUSC9t288g4jgL4aNHrat.'
@@ -108,10 +223,16 @@ runcmd:
   - ln -sf /root/zsh/.zshrc-ohmyzsh-new /root/.zshrc
   - ln -sf /root/zsh/.vimrc /root/
   - chown -R root:root /root
+  - chsh -s /usr/bin/zsh root
   - touch /etc/cloud/cloud-init.disabled
   - rm -f /var/lib/dbus/machine-id
   - truncate -s 0 /etc/machine-id
   - systemd-machine-id-setup
   - ln -sf /etc/machine-id /var/lib/dbus/machine-id
-  - sed -i 's;root:/bin/bash;root:/usr/bin/zsh;' /etc/passwd
-  - /usr/local/bin/post_config.sh
+  - cp /root/.my.cnf /home/kadmin/
+  - chown kadmin:kadmin /home/kadmin/.my.cnf
+  - chmod 600 /home/kadmin/.my.cnf
+  - /root/post_config.sh
+  - /root/mysql_sec_ins.sh
+  - /root/icinga_ins.sh
+  - shutdown -r

@@ -27,14 +27,15 @@ data "template_file" "cloud_init_icinga" {
   vars = {
     ssh_key = file("~/.ssh/id_rsa.pub")
     host_home_icinga=var.host_home_icinga
-    host_sst_icinga=var.host_sst_icinga    
 
     dns_home = var.dns_home_var
     search_domains_home = var.search_domains_home_var
 
-    dns_sst = var.dns_sst_var
-    search_domains_sst = var.search_domains_sst_var
-    
+    mysql_root_pass_new = var.mysql_root_pass_new
+    mysql_icinga_ido_pass = var.mysql_icinga_ido_pass
+    mysql_icinga_web_pass = var.mysql_icinga_web_pass
+    mysql_root_pass_current = var.mysql_root_pass_current
+    icinga_dist = var.icinga_dist
   }
 }
 

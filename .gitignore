@@ -32,3 +32,6 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# terraform cloudinit pregenerated file
+cloud_init.cloud_config_generated.cfg

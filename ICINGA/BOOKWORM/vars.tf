@@ -121,4 +121,19 @@ variable "host_home_icinga" {
 variable "host_sst_icinga" {
     type = string
 }
-
+variable "mysql_root_pass_new" {
+    type = string
+}
+variable "mysql_icinga_ido_pass" {
+    type = string
+}
+variable "mysql_icinga_web_pass" {
+    type = string
+}
+variable "mysql_root_pass_current" {
+    type = string
+}
+variable "icinga_dist" {
+    type = string
+    default = "bookworm"
+}

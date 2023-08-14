@@ -12,7 +12,7 @@ export cores="2"
 export disk_hw="virtio-scsi-pci"
 export disk_size="128G"
 
-# template to install: bookworm or jammy
+# template to install: bullseye or jammy
 export template="bullseye"
 
 # args: "vm_id" "vm_name" "file name in the current directory"
@@ -68,7 +68,7 @@ download_image() {
       export ci_url="https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
       test -f "${cloud_iso}" && echo "cloud image is already downloaded, so I use it" || curl -Lo ${cloud_iso} ${ci_url}
     else
-      echo 'TEMPLATE TO INSTALL: "bookworm" or "jammy"'
+      echo 'TEMPLATE TO INSTALL: "bullseye" or "jammy"'
       echo "NO CORRECT TEMPLATE SPECIFIED, BYE"
       exit 1
     fi
@@ -87,4 +87,3 @@ virt-customize --run-command 'truncate -s 0 /var/lib/dbus/machine-id' -a ${cloud
 
 # create proxmox template
 create_template "${vm_id}" "${vm_name}" "${cloud_iso}" 
-

@@ -47,3 +47,9 @@ search_domains_sst_var = "xxxxx.xxx"
 
 host_home_icinga="xxx.xxx.xxx.xxx icinga.xxxx.net icinga"
 host_sst_icinga="xxx.xxx.xxx.xxx icinga.xxxx.lan icinga"
+
+mysql_root_pass_new = "verysecurepass"
+mysql_icinga_ido_pass = "verysecurepass2"
+mysql_icinga_web_pass = "verysecurepass3"
+mysql_root_pass_current = ""
+icinga_dist = "bookworm"
