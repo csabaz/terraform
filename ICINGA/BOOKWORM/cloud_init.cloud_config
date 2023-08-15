@@ -174,8 +174,8 @@ write_files:
       systemctl restart icinga2
       
       # Director
-      apt install icinga-director
-
+      apt-get install -y icinga-director
+      
       icingacli setup token create |tee -a /root/tocken.web
       echo -e "http://$(hostname -I|awk '{print $1}')/icingaweb2/setup"
       
