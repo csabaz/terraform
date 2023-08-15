@@ -130,6 +130,9 @@ variable "mysql_icinga_ido_pass" {
 variable "mysql_icinga_web_pass" {
     type = string
 }
+variable "mysql_icinga_director_pass" {
+    type = string
+}
 variable "mysql_root_pass_current" {
     type = string
 }

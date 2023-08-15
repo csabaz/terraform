@@ -34,6 +34,7 @@ data "template_file" "cloud_init_icinga" {
     mysql_root_pass_new = var.mysql_root_pass_new
     mysql_icinga_ido_pass = var.mysql_icinga_ido_pass
     mysql_icinga_web_pass = var.mysql_icinga_web_pass
+    mysql_icinga_director_pass = var.mysql_icinga_director_pass
     mysql_root_pass_current = var.mysql_root_pass_current
     icinga_dist = var.icinga_dist
   }

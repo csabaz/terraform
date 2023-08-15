@@ -158,9 +158,11 @@ write_files:
       
       mysqladmin -u root create icinga_ido
       mysqladmin -u root create icinga_web
+      mysqladmin -u root create icinga_director
       
       mysql -u root -e "GRANT ALL on icinga_ido.* to icinga_ido@localhost identified by '${mysql_icinga_ido_pass}';"
       mysql -u root -e "GRANT ALL on icinga_web.* to icinga_web@localhost identified by '${mysql_icinga_web_pass}';"
+      mysql -u root -e "GRANT ALL on icinga_director.* to icinga_director@localhost identified by '${mysql_icinga_director_pass}';"
       mysql -u root -e "FLUSH PRIVILEGES;"
       
       mysql -u root icinga_ido < /usr/share/icinga2-ido-mysql/schema/mysql.sql
@@ -171,8 +173,15 @@ write_files:
       
       systemctl restart icinga2
       
-      icingacli setup token create > /root/tocken.web
+      # Director
+      apt install icinga-director
+
+      icingacli setup token create |tee -a /root/tocken.web
+      echo -e "http://$(hostname -I|awk '{print $1}')/icingaweb2/setup"
       
+      echo -e "\nROOT: ${mysql_root_pass_new}\nIDO: ${mysql_icinga_ido_pass}\nWEB: ${mysql_icinga_web_pass}\nDIR: ${mysql_icinga_director_pass}"
+      echo -e "\nNOT FORGET: icinga2 node wizard" |tee -a /root/tocken.web
+      echo -e "\nDIRECTOR: Make sure that you configure utf8 as encoding." |tee -a /root/tocken.web
     owner: 'root:root'
     permissions: '0755'
   - path: /root/.my.cnf
