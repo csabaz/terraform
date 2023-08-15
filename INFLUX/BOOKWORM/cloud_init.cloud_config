@@ -18,19 +18,17 @@ packages:
   - ca-certificates
   - gnupg
   - jq
+  - expect
 write_files:
-  - path: /usr/local/bin/post_config.sh
+  - path: /root/post_config.sh
     content: |
       #!/usr/bin/env bash
-      mkdir -p /etc/systemd/resolved.conf.d
-      export host_home_influx="10.100.100.203 influx.locdev.net influx"
-      export host_sst_influx="10.12.13.203 influx.mk8s.lan influx"
+      export DEBIAN_FRONTEND=noninteractive
       
-      if fping -c2 -t500 10.100.100.1 &> /dev/null
-      then
+      mkdir -p /etc/systemd/resolved.conf.d
       cat <<EOF > /etc/hosts
       127.0.0.1 localhost
-      10.100.100.203 influx.locdev.net influx
+      ${host_home_influx}
       ::1 localhost ip6-localhost ip6-loopback
       fe00::0 ip6-localnet
       ff00::0 ip6-mcastprefix
@@ -40,44 +38,43 @@ write_files:
       EOF
       cat <<EOF > /etc/systemd/resolved.conf.d/dns.conf
       [Resolve]
-      DNS=10.100.100.1
+      DNS=${dns_home}
       FallbackDNS=1.1.1.1 1.0.0.1 2606:4700:4700::1111 2606:4700:4700::1001
-      Domains=locdev.net
+      Domains=${search_domains_home}
       EOF
-      echo "$(echo $host_home_influx |awk '{print $3}')" > /etc/hostname
-      else
-      cat <<EOF > /etc/hosts
-      127.0.0.1 localhost
-      10.12.13.203 influx.mk8s.lan influx
-      ::1 localhost ip6-localhost ip6-loopback
-      fe00::0 ip6-localnet
-      ff00::0 ip6-mcastprefix
-      ff02::1 ip6-allnodes
-      ff02::2 ip6-allrouters
-      ff02::3 ip6-allhosts
-      EOF
-      cat <<EOF > /etc/systemd/resolved.conf.d/dns.conf
-      [Resolve]
-      DNS=10.12.13.20
-      FallbackDNS=1.1.1.1 1.0.0.1 2606:4700:4700::1111 2606:4700:4700::1001
-      Domains=mk8s.lan
-      EOF
-      echo "$(echo $host_sst_influx |awk '{print $3}')" > /etc/hostname
-      fi
+      echo "${host_home_influx}" |awk '{print $3}' > /etc/hostname
+      
+      #echo "server ${dns_home} iburst" > /etc/chrony/sources.d/ntp.sources
+
       install -m 0755 -d /etc/apt/keyrings
-      curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-      chmod a+r /etc/apt/keyrings/docker.gpg
-      echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-      "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-      apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-      wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O /tmp/install.sh
-      sed -i.bak -e 's:env zsh -l::g' -e 's:chsh -s .*$:echo "ok":g' -e 's:  setup_zshrc::' /tmp/install.sh
-      chmod 755 /tmp/install.sh
-      cp -a /tmp/install.sh /home/kadmin/install.sh
-      chown kadmin:kadmin /home/kadmin/install.sh
-      sudo -u kadmin /home/kadmin/install.sh
-      cp -a /tmp/install.sh /root/install.sh
-      sh -c "/root/install.sh"
+      #curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      #chmod a+r /etc/apt/keyrings/docker.gpg
+      #echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+      #"$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      #apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O /tmp/install.sh
+      sudo chmod +x /tmp/install.sh
+      sudo -u root /tmp/install.sh --unattended --keep-zshrc
+      sudo chown kadmin:kadmin /tmp/install.sh
+      sudo -u kadmin /tmp/install.sh --unattended --keep-zshrc
+      
+      wget https://dl.influxdata.com/influxdb/releases/influxdb2-2.7.0-amd64.deb -P /tmp
+      dpkg -i /tmp/influxdb2-2.7.0-amd64.deb
+      apt-get install -f
+      systemctl enable --now influxdb
+      mkdir -p /usr/local/bin
+      wget https://dl.influxdata.com/influxdb/releases/influxdb2-client-2.7.3-linux-amd64.tar.gz -P /tmp
+      tar xvzf /tmp/influxdb2-client-2.7.3-linux-amd64.tar.gz -C /usr/local/bin/
+      rm /usr/local/bin/LICENSE
+      rm /usr/local/bin/README.md
+
+      influx setup \
+        --org ${influx_org} \
+        --bucket ${influx_bucket} \
+        --username ${influx_user} \
+        --password ${influx_pass} \
+        --force  
+
     owner: 'root:root'
     permissions: '0755'
 users:
@@ -102,16 +99,19 @@ runcmd:
   - git clone https://github.com/csabaz/zsh /home/kadmin/zsh
   - ln -sf /home/kadmin/zsh/.zshrc-ohmyzsh-new /home/kadmin/.zshrc
   - ln -sf /home/kadmin/zsh/.vimrc /home/kadmin/
+  - echo "source <(influx completion zsh)" >> /home/kadmin/zsh/.zshrc-ohmyzsh-new
   - chown -R kadmin:kadmin /home/kadmin
   - mkdir -p /root/zsh
   - git clone https://github.com/csabaz/zsh /root/zsh
   - ln -sf /root/zsh/.zshrc-ohmyzsh-new /root/.zshrc
   - ln -sf /root/zsh/.vimrc /root/
+  - echo "source <(influx completion zsh)" >> /root/zsh/.zshrc-ohmyzsh-new
   - chown -R root:root /root
+  - chsh -s /usr/bin/zsh root
   - touch /etc/cloud/cloud-init.disabled
   - rm -f /var/lib/dbus/machine-id
   - truncate -s 0 /etc/machine-id
   - systemd-machine-id-setup
   - ln -sf /etc/machine-id /var/lib/dbus/machine-id
-  - sed -i 's;root:/bin/bash;root:/usr/bin/zsh;' /etc/passwd
-  - /usr/local/bin/post_config.sh
+  - /root/post_config.sh
+  - shutdown -r now
