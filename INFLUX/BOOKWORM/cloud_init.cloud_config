@@ -57,24 +57,6 @@ write_files:
       sudo -u root /tmp/install.sh --unattended --keep-zshrc
       sudo chown kadmin:kadmin /tmp/install.sh
       sudo -u kadmin /tmp/install.sh --unattended --keep-zshrc
-      
-      wget https://dl.influxdata.com/influxdb/releases/influxdb2-2.7.0-amd64.deb -P /tmp
-      dpkg -i /tmp/influxdb2-2.7.0-amd64.deb
-      apt-get install -f
-      systemctl enable --now influxdb
-      mkdir -p /usr/local/bin
-      wget https://dl.influxdata.com/influxdb/releases/influxdb2-client-2.7.3-linux-amd64.tar.gz -P /tmp
-      tar xvzf /tmp/influxdb2-client-2.7.3-linux-amd64.tar.gz -C /usr/local/bin/
-      rm /usr/local/bin/LICENSE
-      rm /usr/local/bin/README.md
-
-      influx setup \
-        --org ${influx_org} \
-        --bucket ${influx_bucket} \
-        --username ${influx_user} \
-        --password ${influx_pass} \
-        --force  
-
     owner: 'root:root'
     permissions: '0755'
 users:
@@ -87,6 +69,7 @@ users:
     ssh_authorized_keys:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC9yYnGB8/9MCgghNDyFWI3torA4Uzt7JrnnU3PCRMth3D5ZOzB2R/ssJj53Yi/nEUk8sugCuoiehrm735Oi6zEl+px0eFJ9fGJQ26Qh1hK2Fr0RaekAwcTXmoccQtSyyynCxxu7bf+sfZwG+82HtMLJGhCBsMjZcqN/Je5msgSvoUdRFVMAa0Zj8sAYX0wgfD/2+3VZ+lZcV7sJUUyaz9e752G2mDoSJPzgTEPWDqKRok1cUPyg6LIK/hCE1J90pT81GQkYG3jsJSmOqeep7gEA0F5AJX89de/9QavAVwf+zAXz9h0Rj4YFBCDPGE06dzLmlSJ9xhbDnPope1PJosRknkap4dxfhsfNYkVor/dWMAlZxk1OjZyU4jdSFIcaYzXKA30wkBaobFjEkw7/JVDeMoeylTxt+UiVlT2dX/fq0CjS7ZYUsDMeGix5Q4TIybagVzwiEr2vUArcyYcCn2p5p91WM5PW0xfBCG1pJjharREoBunL3jsI+ZjIx3jh8UEpTS6fP+9CcaVHE/bQywO7m2ZSJBJ6wuWvjSjoiU9r49QkiFcvYu43D6ocFC8xsb3sHEie6CZaLYAM1R5GCc0JN14R9Ru9CfVNQ/593d5k7igb6bZ/zBF+HxnPn33IAJvAy/+LrxBmK7RhMoaFchGO+unfqcTQtEekegRkkXJ/Q== cremenar@eoan
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCkA2PuWmT0vBjYLbtCh9eL0YkVb8iAwJ3vc5g/IJAbI7VUjKLJ22EzFsGu8cLsZd4/wcJWitdWSv44jycAVeY8MVv9QdR+qBF46BuSudOr/1qtzuJxRlWvr/z2blt0fQCfd1sAXcJ2bYYkf+RGHjP1xeyqV/rlX5l9+A3wKDy1vgmYb9jXUlh7oX75+s7hQQFV00/PrkQ/jXWQz+itHnuzfbNoxQDYSKD/K4nXw3qJKeDjIgnTouU8+QO+0LTOnS1uLxR6v1GHN+MG5BXMP77F0NSzT0nRX3PEB4RlzIhqmtihqRRGhaCUjzdzcLGoiPalGRyq7WPdS3B6Z3Uisx8+6oPb358Cxhlg82COEZp5KIw4uqCRy0MXmkOt6xjpCysn+U6e5ETIw51LSdhj0aNrVbxDJ/YeVNsCgvuW3PQ/Ev2JHH+IknNYeiV/x85sA/RsORnhJ6ghO83lhdF2t/lWFqnAZIcWWJAPwhpijytwSklKxXkotnyAJKB/850wcG4Gyz0ZKWBm09WITKIhNc0m5hs6WKTKeRJ6o604WryWrBDPNy8BNPvIeJtAUM0pv3KOJS5dhcW28J2fXLRpNFz77i22eXDsrkr42za0ceQOJGpS6H5yjUWvxYchZXUcaVAdPssnxb1hiiI1vDJEZTLFqLsblG+v81viW+Hl2Kolsw== cremenar@client-046.servizist.it
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDgw86wyie8s1BsQMm2J6dMbvNSNKm1a2sl1dIUbJuQvKoX+1s0jlO6He/IstO3Tz3iStSRAI5QcfnNiMNkhGyne3yXeK/+UNv7c4/Ho2G6O+BTgkWGoRyXZWKzz1j38vMmX4sxHvpAoUP7uLW9OdD8BCQt4373UOqR7ziZQvE3R4LU5c3nRyW/umakhWMqMYzf0utS58TsnBEingC5LA7UoFw3/qrqwCEaZGTuwtW2s4hDBLTFfgaPINxsoQyuZbkYgOYvKJmWEWjE3JE10cbl2rLPCEBxii2t+S8SfBujOS/KKksLbEdvDy24AP9InEjdtHS+1UvQ09E4uu5gs1o4dadHvGW7GD59V6rVKNj0v48bKFRgeOJW52ckAGp/9eHhLfmink0iMNpaL4VbzNfYl7GYjC1VHoYobQ9VmaNXBMvthHt3vXbC1nZ+3cVv2wuY2kh9G48qGSuxzxDSje9wuJnSel9ZHjyZEGp5Fc6hx7wFFKVHyasuyOSFUf3EQAW0vjgIg6yX39L/cUGuvcQknzV9l9aV/RHPvlYfY546cX7+2GLPGDQTYCpY11wK1ixpgYiiEYOXBdYo3SJrZUd6/X4xZQYFTeUKeVt/2z4LuEXbs/oMsryDzkHq/A3Bs9GK6fbRnIPqmMGrVEj+lGNeu4hr5Z1EFYNZ9i6Rdd9xRQ== csabaz@lmde-x64
   - name: root
     ssh_authorized_keys:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC9yYnGB8/9MCgghNDyFWI3torA4Uzt7JrnnU3PCRMth3D5ZOzB2R/ssJj53Yi/nEUk8sugCuoiehrm735Oi6zEl+px0eFJ9fGJQ26Qh1hK2Fr0RaekAwcTXmoccQtSyyynCxxu7bf+sfZwG+82HtMLJGhCBsMjZcqN/Je5msgSvoUdRFVMAa0Zj8sAYX0wgfD/2+3VZ+lZcV7sJUUyaz9e752G2mDoSJPzgTEPWDqKRok1cUPyg6LIK/hCE1J90pT81GQkYG3jsJSmOqeep7gEA0F5AJX89de/9QavAVwf+zAXz9h0Rj4YFBCDPGE06dzLmlSJ9xhbDnPope1PJosRknkap4dxfhsfNYkVor/dWMAlZxk1OjZyU4jdSFIcaYzXKA30wkBaobFjEkw7/JVDeMoeylTxt+UiVlT2dX/fq0CjS7ZYUsDMeGix5Q4TIybagVzwiEr2vUArcyYcCn2p5p91WM5PW0xfBCG1pJjharREoBunL3jsI+ZjIx3jh8UEpTS6fP+9CcaVHE/bQywO7m2ZSJBJ6wuWvjSjoiU9r49QkiFcvYu43D6ocFC8xsb3sHEie6CZaLYAM1R5GCc0JN14R9Ru9CfVNQ/593d5k7igb6bZ/zBF+HxnPn33IAJvAy/+LrxBmK7RhMoaFchGO+unfqcTQtEekegRkkXJ/Q== cremenar@eoan
