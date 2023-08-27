@@ -7,6 +7,7 @@ terraform {
   }
 }
 
+
 provider "proxmox" {
   pm_api_url = var.pm_api_url
   pm_api_token_id = var.pm_api_token_id
@@ -25,11 +26,12 @@ data "template_file" "cloud_init_icinga" {
   template  = "${file("${path.module}/cloud_init.cloud_config")}"
   
   vars = {
+    aduser = var.aduser
     ssh_key = file("~/.ssh/id_rsa.pub")
-    host_home_icinga=var.host_home_icinga
+    host_icinga = var.host_icinga
 
-    dns_home = var.dns_home_var
-    search_domains_home = var.search_domains_home_var
+    dns = var.dns
+    search_domains = var.search_domains
 
     mysql_root_pass_new = var.mysql_root_pass_new
     mysql_icinga_ido_pass = var.mysql_icinga_ido_pass
@@ -58,7 +60,7 @@ resource "null_resource" "cloud_init_icinga" {
 # pve storage "snippets" !!
   provisioner "file" {
     source       = local_file.cloud_init_icinga.filename
-    destination  = "/var/lib/pve/local-btrfs/snippets/cloud_init_icinga.yml"
+    destination  = "/var/lib/pve/btrfs-1tb/snippets/cloud_init_icinga.yml"
   }
 }
 

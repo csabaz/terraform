@@ -7,6 +7,7 @@ proxmox_ip = "xxx.xxx.xxx.xxx"
 ssh_user = ""
 ssh_key = "ssh-rsa xxx"
 
+aduser = "user"
 
 #count = "1"
 name = "icinga"
@@ -39,14 +40,10 @@ iothread = "0"
 model = "virtio"
 bridge = "vmbr0"
 
-dns_home_var = "xxx.xxx.xxx.xxx"
-search_domains_home_var = "xxxxxxx.xxx"
+dns = "xxx.xxx.xxx.xxx"
+search_domains = "xxxxxxx.xxx"
 
-dns_sst_var = "xxx.xxx.xxx.xxx"
-search_domains_sst_var = "xxxxx.xxx"
-
-host_home_icinga="xxx.xxx.xxx.xxx icinga.xxxx.net icinga"
-host_sst_icinga="xxx.xxx.xxx.xxx icinga.xxxx.lan icinga"
+host_icinga="xxx.xxx.xxx.xxx icinga.xxxx.net icinga"
 
 mysql_root_pass_new = "verysecurepass"
 mysql_icinga_ido_pass = "verysecurepass2"

@@ -21,6 +21,10 @@ variable "ssh_user" {
 variable "ssh_key" {
     type = string
 }
+variable "aduser" {
+    type = string
+    default = "kadmin"
+}
 variable "name" {
     type = string
     default = "icinga"
@@ -103,22 +107,13 @@ variable "bridge" {
     type = string
     default = "vmbr0"
 }
-variable "dns_home_var" {
+variable "dns" {
     type = string
 }
-variable "search_domains_home_var" {
+variable "search_domains" {
     type = string
 }
-variable "dns_sst_var" {
-    type = string
-}
-variable "search_domains_sst_var" {
-    type = string
-}
-variable "host_home_icinga" {
-    type = string
-}
-variable "host_sst_icinga" {
+variable "host_icinga" {
     type = string
 }
 variable "mysql_root_pass_new" {

@@ -35,7 +35,7 @@ write_files:
       mkdir -p /etc/systemd/resolved.conf.d
       cat <<EOF > /etc/hosts
       127.0.0.1 localhost
-      ${host_home_icinga}
+      ${host_icinga}
       ::1 localhost ip6-localhost ip6-loopback
       fe00::0 ip6-localnet
       ff00::0 ip6-mcastprefix
@@ -45,11 +45,11 @@ write_files:
       EOF
       cat <<EOF > /etc/systemd/resolved.conf.d/dns.conf
       [Resolve]
-      DNS=${dns_home}
+      DNS=${dns}
       FallbackDNS=1.1.1.1 1.0.0.1 2606:4700:4700::1111 2606:4700:4700::1001
-      Domains=${search_domains_home}
+      Domains=${search_domains}
       EOF
-      echo "${host_home_icinga}" |awk '{print $3}' > /etc/hostname
+      echo "${host_icinga}" |awk '{print $3}' > /etc/hostname
       
       install -m 0755 -d /etc/apt/keyrings
       #curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -60,8 +60,8 @@ write_files:
       wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O /tmp/install.sh
       sudo chmod +x /tmp/install.sh
       sudo -u root /tmp/install.sh --unattended --keep-zshrc
-      sudo chown kadmin:kadmin /tmp/install.sh
-      sudo -u kadmin /tmp/install.sh --unattended --keep-zshrc
+      sudo chown ${aduser}:${aduser} /tmp/install.sh
+      sudo -u ${aduser} /tmp/install.sh --unattended --keep-zshrc
       
       sed -i.bak -E -e 's/^;?memory_limit.*$/memory_limit = 256M/' \
               -e 's/^;?post_max_size.*$/post_max_size = 64M/' \
@@ -195,7 +195,7 @@ write_files:
     owner: 'root:root'
     permissions: '0600'
 users:
-  - name: kadmin
+  - name: ${aduser}
     passwd: '$6$BaXfUp3m963pqWqP$JOTmPzlSySMXF4qDp86UVWqiFtzKu8nYXiSbkdZVfmvZtsjpuaU0vSKGZnjYO9qNbUSC9t288g4jgL4aNHrat.'
     shell: /usr/bin/zsh
     lock_passwd: false
@@ -212,13 +212,13 @@ ssh_pwauth: True
 chpasswd:
   expire: False
 runcmd:
-  - mkdir -p /home/kadmin/zsh
-  - git clone https://github.com/csabaz/zsh /home/kadmin/zsh
-  - ln -sf /home/kadmin/zsh/.zshrc-ohmyzsh-new /home/kadmin/.zshrc
-  - ln -sf /home/kadmin/zsh/.vimrc /home/kadmin/
-  - chown -R kadmin:kadmin /home/kadmin
+  - mkdir -p /home/${aduser}/zsh
+  - git clone https://github.com/${aduser}/zsh /home/${aduser}/zsh
+  - ln -sf /home/${aduser}/zsh/.zshrc-ohmyzsh-new /home/${aduser}/.zshrc
+  - ln -sf /home/${aduser}/zsh/.vimrc /home/${aduser}/
+  - chown -R ${aduser}:${aduser} /home/${aduser}
   - mkdir -p /root/zsh
-  - git clone https://github.com/csabaz/zsh /root/zsh
+  - git clone https://github.com/${aduser}/zsh /root/zsh
   - ln -sf /root/zsh/.zshrc-ohmyzsh-new /root/.zshrc
   - ln -sf /root/zsh/.vimrc /root/
   - chown -R root:root /root
@@ -228,9 +228,9 @@ runcmd:
   - truncate -s 0 /etc/machine-id
   - systemd-machine-id-setup
   - ln -sf /etc/machine-id /var/lib/dbus/machine-id
-  - cp /root/.my.cnf /home/kadmin/
-  - chown kadmin:kadmin /home/kadmin/.my.cnf
-  - chmod 600 /home/kadmin/.my.cnf
+  - cp /root/.my.cnf /home/${aduser}/
+  - chown ${aduser}:${aduser} /home/${aduser}/.my.cnf
+  - chmod 600 /home/${aduser}/.my.cnf
   - /root/post_config.sh
   - /root/mysql_sec_ins.sh
   - /root/icinga_ins.sh

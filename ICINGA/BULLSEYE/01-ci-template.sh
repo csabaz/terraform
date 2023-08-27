@@ -3,12 +3,12 @@
 # ssh root@proxmox_host < 01-ci-template.sh
 
 # vm specifications
-export storage="local-btrfs"
+export storage="btrfs-1tb"
 export os_type="l26"
 export net_bridge="vmbr0"
 export memory="8196"
 export cpu_type="host"
-export cores="2"
+export cores="4"
 export disk_hw="virtio-scsi-pci"
 export disk_size="128G"
 
