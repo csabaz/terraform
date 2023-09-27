@@ -129,8 +129,7 @@ write_files:
       echo "deb [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] https://packages.icinga.com/debian icinga-${icinga_dist} main" > /etc/apt/sources.list.d/${icinga_dist}-icinga.list
       echo "deb-src [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] https://packages.icinga.com/debian icinga-${icinga_dist} main" >> /etc/apt/sources.list.d/${icinga_dist}-icinga.list
       
-      apt-get update && apt-get -y install icinga2 icingaweb2 icingacli monitoring-plugins
-      apt-get -y install --no-install-recommends monitoring-plugins*
+      apt-get update && apt-get -y install icinga2 monitoring-plugins && apt-get -y install --no-install-recommends monitoring-plugins*
       
       icinga2 api setup
       
