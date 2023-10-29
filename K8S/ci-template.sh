@@ -1,4 +1,21 @@
 #!/usr/bin/env bash
+# usage:
+# ssh root@proxmox_host < 01-ci-template.sh
+# Install on host libguesetfs-tools to modify cloud image
+#apt-get update && apt-get install -y --no-install-recommends libguestfs-tools
+
+# vm specifications
+export storage="local-btrfs"
+export os_type="l26"
+export net_bridge="vmbr0"
+export memory="4096"
+export cpu_type="host"
+export cores="2"
+export disk_hw="virtio-scsi-pci"
+export disk_size="96G"
+
+# template to install: bookworm or jammy
+export template="bookworm"
 
 # args: "vm_id" "vm_name" "file name in the current directory"
 function create_template() {
@@ -32,67 +49,39 @@ function create_template() {
     qm template $1
         
     #Remove file when done
-    rm $3
+    #rm $3
 }
 
-export storage="local-btrfs"
-export os_type="l26"
-export net_bridge="vmbr0"
-export memory="4096"
-export cpu_type="host"
-export cores="2"
-export disk_hw="virtio-scsi-pci"
-export disk_size="48G"
-
-# TEMPLATE TO INSTALL: bookworm, bullseye or jammy !!!
-
-export TEMPLATE="bookworm"
+download_image() {
+    echo "download image $1"
+    if [ "${1}" = "jammy" ]
+    then
+      export vm_id="921"
+      export vm_name="${1}-ci-x64-k8s"
+      export cloud_iso="${1}-ci-x64-k8s.qcow2"
+      export ci_url="https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
+      test -f "${cloud_iso}" && echo "cloud image is already downloaded, so I use it" || curl -Lo ${cloud_iso} ${ci_url}
+    #Ubuntu 22.04 (Jammy Jellyfish)
+    else    
+      export vm_id="911"
+      export vm_name="${1}-ci-x64-k8s"
+      export cloud_iso="${1}-ci-x64-k8s.qcow2"
+      export ci_url="https://cloud.debian.org/images/cloud/bookworm/daily/latest/debian-12-genericcloud-amd64-daily.qcow2"
+      if [ -f "${cloud_iso}" ]; then
+          echo "cloud image is already downloaded, so I use it"
+      else
+          curl -Lo ${cloud_iso} ${ci_url}
+          # Add any additional packages you want installed in the template, truncate machine_id for correct ipconfig
+          virt-customize --install qemu-guest-agent -a ${cloud_iso}
+          virt-customize --run-command 'truncate -s 0 /etc/machine-id' -a ${cloud_iso}
+          virt-customize --run-command 'truncate -s 0 /var/lib/dbus/machine-id' -a ${cloud_iso}
+      fi
+    fi
+}
 
 # download image
-if [ "${TEMPLATE}" = "bookworm" ]
-then
-  export vm_id="899"
-  export vm_name="bookworm-ci-x64-k8s"
-  export cloud_iso="bookworm-ci-x64-k8s.qcow2"
-  export ci_url="https://cloud.debian.org/images/cloud/bookworm/daily/latest/debian-12-genericcloud-amd64-daily.qcow2"
-  curl -Lo ${cloud_iso} ${ci_url}
-elif [ "${TEMPLATE}" = "bullseye" ]
-then
-  export vm_id="898"
-  export vm_name="bullseye-ci-x64-k8s"
-  export cloud_iso="bullseye-ci-x64-k8s.qcow2"
-  export ci_url="https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-genericcloud-amd64.qcow2"
-  curl -Lo ${cloud_iso} ${ci_url}
-elif [ "${TEMPLATE}" = "jammy" ]
-then
-  export vm_id="897"
-  export vm_name="jammy-ci-x64-k8s"
-  export cloud_iso="jammy-ci-x64-k8s.qcow2"
-  export ci_url="https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
-  curl -Lo ${cloud_iso} ${ci_url}
-else
-  echo "NO TEMPLATE SPECIFIED, BYE"
-  exit 1
-fi
+download_image "$template"
 
-# Install libguesetfs-tools to modify cloud image
-#apt-get update
-#apt-get install -y --no-install-recommends libguestfs-tools
+# create proxmox template
+create_template "${vm_id}" "${vm_name}" "${cloud_iso}" 
 
-# Add any additional packages you want installed in the template, truncate machine_id for correct ipconfig
-virt-customize --install qemu-guest-agent -a ${cloud_iso}
-virt-customize --run-command 'truncate -s 0 /etc/machine-id' -a ${cloud_iso}
-virt-customize --run-command 'truncate -s 0 /var/lib/dbus/machine-id' -a ${cloud_iso}
-
-create_template ${vm_id} "${vm_name}" "${cloud_iso}" 
-
-
-## Debian
-#Bullseye (11)
-#https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-genericcloud-amd64.qcow2
-#Bookworm (12 dailies - not yet released)
-#https://cloud.debian.org/images/cloud/bookworm/daily/latest/debian-12-genericcloud-amd64-daily.qcow2
-
-## Ubuntu
-#22.04 (Jammy Jellyfish)
-#https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img

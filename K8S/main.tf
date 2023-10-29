@@ -104,7 +104,7 @@ resource "proxmox_vm_qemu" "k8s-master" {
   scsihw       = "virtio-scsi-pci"
 
   disk {
-    size            = "48G"
+    size            = "96G"
     type            = "scsi"
     storage         = var.vm_storage
     iothread        = 0
@@ -158,7 +158,7 @@ resource "proxmox_vm_qemu" "k8s-worker" {
   scsihw       = "virtio-scsi-pci"
 
   disk {
-    size            = "48G"
+    size            = "96G"
     type            = "scsi"
     storage         = var.vm_storage
     iothread        = 0
