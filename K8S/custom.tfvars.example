@@ -1,3 +1,6 @@
+#pveum role add TerraformProv -privs "Datastore.AllocateSpace Datastore.Audit Pool.Allocate Sys.Audit Sys.Console Sys.Modify VM.Allocate VM.Audit VM.Clone VM.Config.CDROM VM.Config.Cloudinit VM.Config.CPU VM.Config.Disk VM.Config.HWType VM.Config.Memory VM.Config.Network VM.Config.Options VM.Migrate VM.Monitor VM.PowerMgmt"
+#pveum user add terraform-prov@pve --password <password>
+#pveum aclmod / -user terraform-prov@pve -role TerraformProv
 pm_api_url = "https://xxxxxxx:8006/api2/json"
 pm_api_token_id = "xxxxxx"
 pm_api_token_secret = "xxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -28,6 +31,3 @@ gateway = "xxx.xxx.xxx.xxx"
 
 dns_home_var = "xxx.xxx.xxx.xxx"
 search_domains_home_var = "domainsxxx"
-
-dns_sst_var = "xxx.xxx.xxx.xxx"
-search_domains_sst_var = "domainsxxx"

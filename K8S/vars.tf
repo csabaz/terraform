@@ -82,12 +82,6 @@ variable "gateway" {
 variable "dns_home_var" {
     type = string
 }
-variable "dns_sst_var" {
-    type = string
-}
 variable "search_domains_home_var" {
-    type = string
-}
-variable "search_domains_sst_var" {
     type = string
 }
