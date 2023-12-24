@@ -2,8 +2,11 @@
 # usage:
 # ssh root@proxmox_host < 01-ci-template.sh
 # Install on host libguesetfs-tools to modify cloud image
-#apt-get update && apt-get install -y --no-install-recommends libguestfs-tools
-
+apt-get update
+if [ $(dpkg-query -W -f='${Status}' libguesetfs-tools 2>/dev/null | grep -c "ok installed") -eq 0 ];
+then
+   apt-get install -y --no-install-recommends libguestfs-tools
+fi
 # vm specifications
 export storage="local-btrfs"
 export os_type="l26"
