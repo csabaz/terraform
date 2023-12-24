@@ -11,11 +11,11 @@ fi
 export storage="local-btrfs"
 export os_type="l26"
 export net_bridge="vmbr0"
-export memory="16384"
+export memory="4096"
 export cpu_type="host"
-export cores="4"
+export cores="3"
 export disk_hw="virtio-scsi-pci"
-export disk_size="200G"
+export disk_size="192G"
 
 # template to install: bookworm or jammy
 export template="bookworm"

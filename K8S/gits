@@ -10,12 +10,15 @@ crictl --runtime-endpoint unix:///var/run/containerd/containerd.sock ps -a
 
 set language:
 
-echo -e 'LANG="en_US.UTF-8"\nLANGUAGE="en_US:en"\n' > /etc/default/locale && sed -i -e 's/^# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' -e 's/^# it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
+echo -e 'LANG="en_US.UTF-8"\nLANGUAGE="en_US:en"\n' > /etc/default/locale \
+&& sed -i -e 's/^# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' \
+-e 's/^# it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
 
 ---
 
 Metrics High Availability
-Metrics Server can be installed in high availability mode directly from a YAML manifest or via the official Helm chart by setting the replicas value greater than 1. To install the latest Metrics Server release in high availability mode from the high-availability.yaml manifest, run the following command.
+Metrics Server can be installed in high availability mode directly from a YAML manifest or via the official Helm chart by setting the replicas value greater than 1.
+To install the latest Metrics Server release in high availability mode from the high-availability.yaml manifest, run the following command.
 
 On Kubernetes v1.21+:
 
