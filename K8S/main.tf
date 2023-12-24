@@ -102,12 +102,12 @@ resource "proxmox_vm_qemu" "master" {
   bootdisk = "scsi0"
   scsihw       = "virtio-scsi-pci"
 
-  disk {
-    size            = "200G"
-    type            = "scsi"
-    storage         = var.vm_storage
-    iothread        = 0
-  }
+  #disk {
+  #  size            = "200G"
+  #  type            = "scsi"
+  #  storage         = var.vm_storage
+  #  iothread        = 0
+  #}
 
   # Set the network
   network {
@@ -126,3 +126,56 @@ resource "proxmox_vm_qemu" "master" {
 }
 
 
+# Create the VM worker
+resource "proxmox_vm_qemu" "worker" {
+  ## Wait for the cloud-config file to exist
+
+  depends_on = [
+    null_resource.cloud_init_k8s
+  ]
+  
+  count = var.count_worker
+  name = "worker${count.index + 1}"
+  vmid = "${var.vm_id_worker_prefix}${count.index + 5}"
+  target_node = var.proxmox_host
+
+  # Clone from xxx-ci-x64-tmpl template
+  clone = var.template_name
+  os_type = "cloud-init"
+
+  # Cloud init options
+  cicustom = var.ci_custom
+  ipconfig0 = "ip=${var.ip_worker}${count.index + 5}/${var.ipmask},gw=${var.gateway}"
+
+  cpu = "host"
+  sockets  = "1"
+  cores   = var.cpu_cores
+  memory       = var.memory_worker
+  agent        = 1
+
+  # Set the boot disk paramters
+  bootdisk = "scsi0"
+  scsihw       = "virtio-scsi-pci"
+
+  #disk {
+  #  size            = "200G"
+  #  type            = "scsi"
+  #  storage         = var.vm_storage
+  #  iothread        = 0
+  #}
+
+  # Set the network
+  network {
+    model = "virtio"
+    bridge = "vmbr0"
+  }
+
+  # Ignore changes to the network
+  ## MAC address is generated on every apply, causing
+  ## TF to think this needs to be rebuilt on every apply
+  lifecycle {
+     ignore_changes = [
+       network
+     ]
+  }
+}

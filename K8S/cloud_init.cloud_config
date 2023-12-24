@@ -80,8 +80,8 @@ write_files:
       "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
       
       ## install kubeadm, kubectl, kubelet
-      curl -fsSLo /etc/apt/keyrings/k8s.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-      echo "deb [signed-by=/etc/apt/keyrings/k8s.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | \
+      curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | \
       tee /etc/apt/sources.list.d/kubernetes.list
       apt-get update && apt-get install -y containerd.io kubelet=1.28.5-1.1 kubeadm=1.28.5-1.1 kubectl=1.28.5-1.1
       apt-mark hold kubelet kubeadm kubectl
@@ -140,5 +140,5 @@ runcmd:
   - truncate -s 0 /etc/machine-id
   - systemd-machine-id-setup
   - ln -sf /etc/machine-id /var/lib/dbus/machine-id
-  - sed 's;/root:/bin/bash;/root:/usr/bin/zsh;' /etc/passwd
+  - sed -i 's;/root:/bin/bash;/root:/usr/bin/zsh;' /etc/passwd
   - /usr/local/bin/post_config.sh
