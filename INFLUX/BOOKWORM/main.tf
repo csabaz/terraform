@@ -1,23 +1,32 @@
+#terraform {
+#  required_providers {
+#    proxmox = {
+#      source = "telmate/proxmox"
+#      version = "2.9.14"
+#    }
+#  }
+#}
+
 terraform {
-  required_providers {
-    proxmox = {
-      source = "telmate/proxmox"
-      version = "2.9.14"
+    required_providers {
+        proxmox = {
+            source = "loeken/proxmox"
+            version = "2.9.16"
+        }
     }
-  }
 }
 
 provider "proxmox" {
   pm_api_url = var.pm_api_url
   pm_api_token_id = var.pm_api_token_id
   pm_api_token_secret = var.pm_api_token_secret
-  #pm_log_enable = true
-  #pm_log_file   = "/ADATA/terraform-plugin-proxmox.log"
-  #pm_debug      = true
-  #pm_log_levels = {
-  #  _default    = "debug"
-  #  _capturelog = ""
-  #}
+  pm_log_enable = true
+  pm_log_file   = "/ADATA/terraform-plugin-proxmox.log"
+  pm_debug      = true
+  pm_log_levels = {
+    _default    = "debug"
+    _capturelog = ""
+  }
 }
 
 # Source the Cloud Init Config file
@@ -26,22 +35,19 @@ data "template_file" "cloud_init_influx" {
   
   vars = {
     ssh_key = file("~/.ssh/id_rsa.pub")
-    host_home_influx = var.host_home_influx
-
+    
+    host_master1="10.100.100.225 influx.locdev.net influx"
+   
     dns_home = var.dns_home_var
     search_domains_home = var.search_domains_home_var
-    influx_org    = var.influx_org
-    influx_bucket = var.influx_bucket
-    influx_user   = var.influx_user
-    influx_pass   = var.influx_pass
-
+    
   }
 }
 
 # Create a local copy of the file, to transfer to Proxmox
 resource "local_file" "cloud_init_influx" {
   content   = data.template_file.cloud_init_influx.rendered
-  filename  = "${path.module}/cloud_init.cloud_config_generated.cfg"
+  filename  = "${path.module}/user_data_cloud_init_influx.cfg"
 }
 
 # Transfer the file to the Proxmox Host
@@ -56,11 +62,11 @@ resource "null_resource" "cloud_init_influx" {
 # pve storage "snippets" !!
   provisioner "file" {
     source       = local_file.cloud_init_influx.filename
-    destination  = "/var/lib/pve/btrfs/snippets/cloud_init_influx.yml"
+    destination  = "/var/lib/pve/local-btrfs/snippets/cloud_init_influx.yml"
   }
 }
 
-# Create the VM master
+# Create the VM influx
 resource "proxmox_vm_qemu" "influx" {
   ## Wait for the cloud-config file to exist
 
@@ -68,38 +74,40 @@ resource "proxmox_vm_qemu" "influx" {
     null_resource.cloud_init_influx
   ]
   
-  count       = "1"
-  name        = var.name
-  vmid        = "${var.vm_id_prefix}${count.index + 5}"
-  target_node = var.target_node
+  count = var.count_master
+  name = "master${count.index + 1}"
+  vmid = "${var.vm_id_master_prefix}${count.index + 5}"
+  target_node = var.proxmox_host
 
-  # Clone from xxx-ci-x64-influx template
-  clone       = var.clone
-  os_type     = var.os_type
-  cicustom    = var.cicustom
-  ipconfig0   = "ip=${var.ipre}${count.index + 5}/${var.mask},gw=${var.gateway}"
+  # Clone from xxx-ci-x64-tmpl template
+  clone = var.template_name
+  os_type = "cloud-init"
+
+  # Cloud init options
+  cicustom = var.ci_custom
+  ipconfig0 = "ip=${var.ip_master}${count.index + 5}/${var.ipmask},gw=${var.gateway}"
   
-  cpu         = var.cpu
-  sockets     = var.sockets
-  cores       = var.cores
-  memory      = var.memory
-  agent       = var.agent
+  cpu = "host"
+  sockets  = "1"
+  cores   = var.cpu_cores
+  memory  = var.memory_master
+  agent   = 1
 
   # Set the boot disk paramters
-  bootdisk    = var.bootdisk
-  scsihw      = var.scsihw
+  bootdisk = "scsi0"
+  scsihw       = "virtio-scsi-pci"
 
-  disk {
-    size      = var.size
-    type      = var.type
-    storage   = var.storage
-    iothread  = var.iothread
-  }
+  #disk {
+  #  size            = "200G"
+  #  type            = "scsi"
+  #  storage         = var.vm_storage
+  #  iothread        = 0
+  #}
 
   # Set the network
   network {
-    model     = var.model
-    bridge    = var.bridge
+    model = "virtio"
+    bridge = "vmbr0"
   }
 
   # Ignore changes to the network
@@ -111,4 +119,3 @@ resource "proxmox_vm_qemu" "influx" {
      ]
   }
 }
-

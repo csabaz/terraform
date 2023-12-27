@@ -1,50 +1,29 @@
+#pveum role add TerraformProv -privs "Datastore.AllocateSpace Datastore.Audit Pool.Allocate Sys.Audit Sys.Console Sys.Modify VM.Allocate VM.Audit VM.Clone VM.Config.CDROM VM.Config.Cloudinit VM.Config.CPU VM.Config.Disk VM.Config.HWType VM.Config.Memory VM.Config.Network VM.Config.Options VM.Migrate VM.Monitor VM.PowerMgmt"
+#pveum user add xxxxxxxxx@xxx --password <password>
+#pveum aclmod / -user xxxxxxxxx@xxx -role xxxxxxxxxx
 pm_api_url = "https://xxx.xxx.xxx.xxx:8006/api2/json"
-pm_api_token_id = "user@pve!token"
-pm_api_token_secret = "xxxxxxxxxx-xxxxxx-xxxxxxx-xxxxx"
+pm_api_token_id = "xxxxxxx@xxxx!xxx"
+pm_api_token_secret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 pm_tls_insecure = "true"
-
+proxmox_host = "pve"
 proxmox_ip = "xxx.xxx.xxx.xxx"
-ssh_user = ""
+template_name = "bookworm-ci-x64-influx"
+ssh_user = "root"
 ssh_key = "ssh-rsa xxx"
 
+#vm count
+vm_id_master_prefix = "22"
+count_master = "1"
+cpu_cores = "4"
+memory_master = "16384"
 
-#count = "1"
-name = "influx"
-vm_id_prefix = "20"
-target_node = "pve"
-
-# Clone from xxx-ci-x64-influx template
-clone = "bookworm-ci-x64-influx"
-os_type = "cloud-init"
-cicustom = "user=btrfs:snippets/cloud_init_influx.yml"
-##ipconfig0 = "ip=${var.ipre}${count.index + <NUBER es: 1>}/24,gw=${var.gw}"
-ipre = "xxx.xxx.xxx.XX"
-mask = "24"
+ci_custom = "user=local-btrfs:snippets/cloud_init_influx.yml"
+vm_storage = "local-btrfs"
+nic_name = "vmbr0"
+## ip + index ex: ipconfig0 = "ip=${var.ip}${count.index + <NUBER es: 1>}/24,gw=${var.gw}"
+ip_master = "xxx.xxx.xxx.22"
+ipmask = "24"
 gateway = "xxx.xxx.xxx.xxx"
 
-cpu = "host"
-sockets = "1"
-cores = "4"
-memory = "16384"
-agent = "1"
-
-bootdisk = "scsi0"
-scsihw = "virtio-scsi-pci"
-
-size = "128G"
-type = "scsi"
-storage = "local-btrfs"
-iothread = "0"
-
-model = "virtio"
-bridge = "vmbr0"
-
 dns_home_var = "xxx.xxx.xxx.xxx"
-search_domains_home_var = "xxxxxxx.xxx"
-
-host_home_influx="xxx.xxx.xxx.xxx influx.xxxx.net influx"
-
-influx_org    = "xxx-db"
-influx_bucket = "xxx-bucket"
-influx_user   = "xxxxxx"
-influx_pass   = "xxxxxxxxxxxxxx"
+search_domains_home_var = "xxxxx.xxx"

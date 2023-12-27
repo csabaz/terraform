@@ -35,3 +35,4 @@ terraform.rc
 
 # terraform cloudinit pregenerated file
 cloud_init.cloud_config_generated.cfg
+user_data*

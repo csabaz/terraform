@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 # usage:
 # ssh root@proxmox_host < 01-ci-template.sh
-
+# Install on host libguesetfs-tools to modify cloud image
+apt-get update
+if [ $(dpkg-query -W -f='${Status}' libguesetfs-tools 2>/dev/null | grep -c "ok installed") -eq 0 ];
+then
+   apt-get install -y --no-install-recommends libguestfs-tools
+fi
 # vm specifications
-export storage="btrfs"
+export storage="local-btrfs"
 export os_type="l26"
 export net_bridge="vmbr0"
-export memory="8196"
+export memory="16384"
 export cpu_type="host"
-export cores="2"
+export cores="4"
 export disk_hw="virtio-scsi-pci"
-export disk_size="96G"
+export disk_size="256G"
 
 # template to install: bookworm or jammy
 export template="bookworm"
@@ -52,38 +57,33 @@ function create_template() {
 
 download_image() {
     echo "download image $1"
-    if [ "${1}" = "bookworm" ]
-    then
-      export vm_id="911"
-      export vm_name="${1}-ci-x64-influx"
-      export cloud_iso="${1}-ci-x64-influx.qcow2"
-      export ci_url="https://cloud.debian.org/images/cloud/bookworm/daily/latest/debian-12-genericcloud-amd64-daily.qcow2"
-      test -f "${cloud_iso}" && echo "cloud image is already downloaded, so I use it" || curl -Lo ${cloud_iso} ${ci_url}
-    #Ubuntu 22.04 (Jammy Jellyfish)
-    elif [ "${1}" = "jammy" ]
+    if [ "${1}" = "jammy" ]
     then
       export vm_id="921"
       export vm_name="${1}-ci-x64-influx"
       export cloud_iso="${1}-ci-x64-influx.qcow2"
       export ci_url="https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
       test -f "${cloud_iso}" && echo "cloud image is already downloaded, so I use it" || curl -Lo ${cloud_iso} ${ci_url}
-    else
-      echo 'TEMPLATE TO INSTALL: "bookworm" or "jammy"'
-      echo "NO CORRECT TEMPLATE SPECIFIED, BYE"
-      exit 1
+    #Ubuntu 22.04 (Jammy Jellyfish)
+    else    
+      export vm_id="911"
+      export vm_name="${1}-ci-x64-influx"
+      export cloud_iso="${1}-ci-x64-influx.qcow2"
+      export ci_url="https://cloud.debian.org/images/cloud/bookworm/daily/latest/debian-12-genericcloud-amd64-daily.qcow2"
+      if [ -f "${cloud_iso}" ]; then
+          echo "cloud image is already downloaded, so I use it"
+      else
+          curl -Lo ${cloud_iso} ${ci_url}
+          # Add any additional packages you want installed in the template, truncate machine_id for correct ipconfig
+          virt-customize --install qemu-guest-agent -a ${cloud_iso}
+          virt-customize --run-command 'truncate -s 0 /etc/machine-id' -a ${cloud_iso}
+          virt-customize --run-command 'truncate -s 0 /var/lib/dbus/machine-id' -a ${cloud_iso}
+      fi
     fi
 }
 
 # download image
 download_image "$template"
-
-# Install on host libguesetfs-tools to modify cloud image
-#apt-get update && apt-get install -y --no-install-recommends libguestfs-tools
-
-# Add any additional packages you want installed in the template, truncate machine_id for correct ipconfig
-virt-customize --install qemu-guest-agent -a ${cloud_iso}
-virt-customize --run-command 'truncate -s 0 /etc/machine-id' -a ${cloud_iso}
-virt-customize --run-command 'truncate -s 0 /var/lib/dbus/machine-id' -a ${cloud_iso}
 
 # create proxmox template
 create_template "${vm_id}" "${vm_name}" "${cloud_iso}" 
